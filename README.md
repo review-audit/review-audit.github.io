@@ -1,15 +1,15 @@
-# Review Audit — public homepage
+# Review Audit — sign-in entry
 
 Live: **https://review-audit.github.io/**
 
-This repository contains the static research-project homepage. Its Sign in and Create account links open the application at **https://review-audit-seven.vercel.app/**. Registration, authentication, reviews and assessments are handled by that application's backend and Turso database, not by GitHub Pages.
+This repository provides the public entry to ReviewAudit. Visiting the homepage automatically opens the application’s sign-in page at **https://review-audit-seven.vercel.app/#/login**. The page uses an immediate redirect with a no-JavaScript meta-refresh fallback and visible sign-in / registration links. Registration, authentication, reviews and assessments are handled by that application's backend and Turso database, not by GitHub Pages.
 
 Application source (private): [gaojie058/review-audit](https://github.com/gaojie058/review-audit).
 Application deployment guide (requires repository access): [docs/DEPLOYMENT.md](https://github.com/gaojie058/review-audit/blob/main/docs/DEPLOYMENT.md).
 
 ## Files
 
-- `index.html`: complete responsive homepage, including inline styles and application links.
+- `index.html`: sign-in redirect with responsive fallback content and application links.
 - `.nojekyll`: tells GitHub Pages to publish the files directly, without Jekyll processing.
 - `DEPLOYMENT.md`: exact Pages settings, update steps and verification.
 

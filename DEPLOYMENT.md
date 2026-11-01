@@ -1,4 +1,4 @@
-# Deploy the public homepage
+# Deploy the public sign-in entry
 
 ## Current settings
 
@@ -11,10 +11,10 @@
 | HTTPS | Enforced |
 | Custom domain | None |
 | Website | https://review-audit.github.io/ |
-| Sign-in destination | https://review-audit-seven.vercel.app/ |
+| Sign-in destination | https://review-audit-seven.vercel.app/#/login |
 | Registration destination | https://review-audit-seven.vercel.app/#/register |
 
-The organization name determines the `github.io` hostname. Keeping this hostname requires retaining the `review-audit` organization and repository name. This is a static homepage; its login links navigate to Vercel, where the account cookie and API share one origin.
+The organization name determines the `github.io` hostname. Keeping this hostname requires retaining the `review-audit` organization and repository name. This static entry page immediately redirects visitors to the Vercel sign-in page, where the account cookie and API share one origin. GitHub Pages does not host an independent login form. JavaScript uses `location.replace` to avoid a Back-button redirect loop; meta refresh and visible links provide fallbacks.
 
 ## Recreate or configure Pages
 
@@ -47,19 +47,19 @@ An already-enabled site returns HTTP 409 for that POST; inspect its existing set
    python3 -m http.server 8080 --bind 127.0.0.1
    ```
 
-2. Verify the page layout and both destination links. No account data is submitted by this static page.
+2. Verify the automatic redirect reaches the sign-in form and the fallback links point to the correct destinations. No account data is submitted by this static page.
 3. Commit the changes and push `main`. GitHub Pages publishes automatically.
 4. Confirm the deployment in **Settings → Pages** or **Actions**, then inspect https://review-audit.github.io/.
 
-If the Vercel application hostname changes, update **both** links in `index.html` and the destinations in this guide. Keep `#/register` on the registration link. No database keys or `.env` file are needed here.
+If the Vercel application hostname changes, update the JavaScript redirect, meta refresh, canonical URL and **both** links in `index.html` and the destinations in this guide. Keep `#/register` on the registration link. No database keys or `.env` file are needed here.
 
 To roll back, revert the relevant homepage commit and push the revert to `main`. This affects only the public homepage; it does not change application accounts or database contents.
 
 ## Verify
 
 - The live homepage loads over HTTPS.
-- **Sign in** opens the Vercel sign-in form.
-- **Create account** opens the Vercel registration tab.
+- Opening the GitHub Pages URL automatically reaches `https://review-audit-seven.vercel.app/#/login` and displays the Vercel sign-in form.
+- The sign-in page’s **Sign Up** button opens the Vercel registration form.
 - Backend verification is documented in the private application's `docs/DEPLOYMENT.md` and automated by `npm run verify:deployment -- https://review-audit-seven.vercel.app/` from that repository.
 
 If the homepage returns 404, check the organization/repository spelling, branch source, root `index.html`, and the Pages deployment result. If the homepage works but sign-in fails, inspect the application's Vercel deployment and database configuration rather than the Pages settings.
