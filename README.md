@@ -1,18 +1,16 @@
-# Review Audit — sign-in entry
+# ReviewAudit — public frontend
 
 Live: **https://review-audit.github.io/**
 
-This repository provides the public entry to ReviewAudit. Visiting the homepage automatically opens the application’s sign-in page at **https://review-audit-seven.vercel.app/#/login**. The page uses an immediate redirect with a no-JavaScript meta-refresh fallback and visible sign-in / registration links. Registration, authentication, reviews and assessments are handled by that application's backend and Turso database, not by GitHub Pages.
+This repository hosts the compiled ReviewAudit web application. Login, registration, the Area Chair Console, review forms and PDF previews stay on `review-audit.github.io`. There is no redirect or embedded Vercel page. The browser calls the Vercel API in the background using the existing account system and database.
 
 Application source (private): [gaojie058/review-audit](https://github.com/gaojie058/review-audit).
-Application deployment guide (requires repository access): [docs/DEPLOYMENT.md](https://github.com/gaojie058/review-audit/blob/main/docs/DEPLOYMENT.md).
 
-## Files
+## Published files
 
-- `index.html`: sign-in redirect with responsive fallback content and application links.
-- `.nojekyll`: tells GitHub Pages to publish the files directly, without Jekyll processing.
-- `DEPLOYMENT.md`: exact Pages settings, update steps and verification.
+- `index.html` and `assets/`: compiled React frontend, styles, fonts and PDF worker.
+- `.nojekyll`: publish the build directly without Jekyll processing.
+- `build-info.json`: the application source commit and public API origin for this release.
+- `DEPLOYMENT.md`: release instructions and verification.
 
-There are no dependencies to install, build commands, environment variables, passwords or database credentials in this repository. Keep all real account data and review data out of it.
-
-To preview locally, run `python3 -m http.server 8080 --bind 127.0.0.1` and open http://127.0.0.1:8080/.
+Do not edit generated bundles. Build a new release from the private application repository. No passwords, tokens, database credentials, server source or private review data belong here.

@@ -1,65 +1,44 @@
-# Deploy the public sign-in entry
-
-## Current settings
+# Deploy the GitHub Pages frontend
 
 | Setting | Value |
 | --- | --- |
-| GitHub organization | `review-audit` |
-| Repository | `review-audit.github.io` (public) |
-| Pages source | Deploy from a branch |
-| Branch / directory | `main` / `/ (root)` |
+| Repository | `review-audit/review-audit.github.io` |
+| Pages source | Deploy from a branch: `main` / root |
 | HTTPS | Enforced |
 | Custom domain | None |
-| Website | https://review-audit.github.io/ |
-| Sign-in destination | https://review-audit-seven.vercel.app/#/login |
-| Registration destination | https://review-audit-seven.vercel.app/#/register |
+| Frontend | https://review-audit.github.io/ |
+| API | https://review-audit-seven.vercel.app/api |
 
-The organization name determines the `github.io` hostname. Keeping this hostname requires retaining the `review-audit` organization and repository name. This static entry page immediately redirects visitors to the Vercel sign-in page, where the account cookie and API share one origin. GitHub Pages does not host an independent login form. JavaScript uses `location.replace` to avoid a Back-button redirect loop; meta refresh and visible links provide fallbacks.
+The full frontend is served by GitHub Pages. Application navigation uses hash routes, such as `#/login`, `#/register`, `#/papers` and `#/reviews/…`. Do not replace the frontend with a redirect or an iframe.
 
-## Recreate or configure Pages
+## Publish a release
 
-1. Create/select the public `review-audit/review-audit.github.io` repository with `index.html` and `.nojekyll` in the root of `main`.
-2. Open **Settings → Pages → Build and deployment**.
-3. Set **Source** to **Deploy from a branch**; select **main** and **/ (root)**, then Save.
-4. Enable **Enforce HTTPS** if available and not already enabled.
-5. Wait until the Pages deployment finishes, then visit the website. No manually authored Actions workflow or external build service is necessary; GitHub manages branch-based Pages publishing.
-
-For an authorized GitHub CLI session, inspect the settings with:
-
-```sh
-gh api repos/review-audit/review-audit.github.io/pages
-```
-
-Only if Pages is not yet enabled, initialize it with:
-
-```sh
-gh api repos/review-audit/review-audit.github.io/pages --method POST \
-  -f 'source[branch]=main' -f 'source[path]=/'
-```
-
-An already-enabled site returns HTTP 409 for that POST; inspect its existing settings instead of repeatedly creating it.
-
-## Publish changes
-
-1. Edit `index.html` and preview locally:
+1. In the private application repository, run `npm run check`, commit, and push `main`. Wait for the matching Vercel production deployment to be ready.
+2. Update this Pages checkout, then run from the application repository:
 
    ```sh
-   python3 -m http.server 8080 --bind 127.0.0.1
+   node scripts/publish-pages.mjs /path/to/review-audit.github.io
    ```
 
-2. Verify the automatic redirect reaches the sign-in form and the fallback links point to the correct destinations. No account data is submitted by this static page.
-3. Commit the changes and push `main`. GitHub Pages publishes automatically.
-4. Confirm the deployment in **Settings → Pages** or **Actions**, then inspect https://review-audit.github.io/.
+   The script builds the Pages version, copies browser assets, and records the source SHA in `build-info.json`. It requires a clean application checkout and verifies the destination repository. Older hashed assets are kept for open browser tabs.
+3. Review the generated diff, commit and push this repository's `main` branch. GitHub Pages publishes automatically.
+4. Check **Actions → pages build and deployment** and confirm that it succeeded for the new commit.
+5. Visit https://review-audit.github.io/#/login and verify that the address stays on this domain when switching to registration and navigating the application.
 
-If the Vercel application hostname changes, update the JavaScript redirect, meta refresh, canonical URL and **both** links in `index.html` and the destinations in this guide. Keep `#/register` on the registration link. No database keys or `.env` file are needed here.
+If the API hostname changes, update the Pages build target and publishing script in the private source repository, rebuild, and republish. No API secrets are needed for this static build.
 
-To roll back, revert the relevant homepage commit and push the revert to `main`. This affects only the public homepage; it does not change application accounts or database contents.
+## Authentication and data
 
-## Verify
+Vercel continues to run the API and use the existing database. Its CORS allowlist explicitly includes only this public frontend origin. The Pages frontend uses a short-lived opaque session token in tab-scoped session storage and sends it in the API Authorization header. No token is added to navigation URLs or external PDF requests. Third-party cookies are not required. Reloading a signed-in tab preserves its session; an independent new tab may require signing in again.
 
-- The live homepage loads over HTTPS.
-- Opening the GitHub Pages URL automatically reaches `https://review-audit-seven.vercel.app/#/login` and displays the Vercel sign-in form.
-- The sign-in page’s **Sign Up** button opens the Vercel registration form.
-- Backend verification is documented in the private application's `docs/DEPLOYMENT.md` and automated by `npm run verify:deployment -- https://review-audit-seven.vercel.app/` from that repository.
+The Vercel frontend remains compatible with its existing HttpOnly cookie sessions. Account passwords and review data are shared across the two frontends. Workspace ownership and version checks still run on the backend.
 
-If the homepage returns 404, check the organization/repository spelling, branch source, root `index.html`, and the Pages deployment result. If the homepage works but sign-in fails, inspect the application's Vercel deployment and database configuration rather than the Pages settings.
+## Verify and roll back
+
+- Confirm `build-info.json` contains the intended application SHA.
+- Verify login, registration navigation, console, review forms, authenticated PDF preview and logout without a domain change.
+- Check the browser console for failed API requests or CORS errors.
+- Confirm requests from other origins are rejected and unauthenticated review requests return 401.
+- Revert a Pages release commit to restore the previous frontend. Revert the backend separately only when compatible with the frontend and database schema.
+
+Application operations: [private deployment guide](https://github.com/gaojie058/review-audit/blob/main/docs/DEPLOYMENT.md).
